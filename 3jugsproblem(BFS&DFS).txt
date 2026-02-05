@@ -1,0 +1,77 @@
+from collections import deque
+import heapq
+A_CAP = 8
+B_CAP = 5
+C_CAP = 3
+GOAL = 7
+def is_goal(state):
+    return GOAL in state
+def get_next_states(state):
+    a, b, c = state
+    states = []
+    states.append((A_CAP, b, c))
+    states.append((a, B_CAP, c))
+    states.append((a, b, C_CAP))
+    states.append((0, b, c))
+    states.append((a, 0, c))
+    states.append((a, b, 0))
+    pour = min(a, B_CAP - b)
+    states.append((a - pour, b + pour, c))
+    pour = min(a, C_CAP - c)
+    states.append((a - pour, b, c + pour))
+    pour = min(b, A_CAP - a)
+    states.append((a + pour, b - pour, c))
+    pour = min(b, C_CAP - c)
+    states.append((a, b - pour, c + pour))
+    pour = min(c, A_CAP - a)
+    states.append((a + pour, b, c - pour))
+    pour = min(c, B_CAP - b)
+    states.append((a, b + pour, c - pour))
+    return states
+def bfs(start):
+    queue = deque([start])
+    visited = set([start])
+    parent = {start: None}
+    while queue:
+        current = queue.popleft()
+        if is_goal(current):
+            return parent, current
+        for state in get_next_states(current):
+            if state not in visited:
+                visited.add(state)
+                parent[state] = current
+                queue.append(state)
+    return None, None
+def dfs(start):
+    stack = [(start, None)]
+    visited = set()
+    parent = {}
+    while stack:
+        current, prev = stack.pop()
+        if current in visited:
+            continue
+        visited.add(current)
+        parent[current] = prev
+        if is_goal(current):
+            return parent, current
+        for state in get_next_states(current):
+            if state not in visited:
+                stack.append((state, current))
+    return None, None
+def print_solution(parent, end):
+    path = []
+    while end is not None:
+        path.append(end)
+        end = parent[end]
+    path.reverse()
+    for state in path:
+        print(state)
+    print("Total steps:", len(path) - 1)
+if __name__ == "__main__":
+    start_state = (0, 0, 0)
+    print("BFS Solution:")
+    parent, end = bfs(start_state)
+    print_solution(parent, end)
+    print("\nDFS Solution:")
+    parent, end = dfs(start_state)
+    print_solution(parent, end)
